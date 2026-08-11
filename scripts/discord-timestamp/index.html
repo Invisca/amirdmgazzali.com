@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Generate Discord timestamps that display in each viewer's local timezone.">
+  <title>Discord Timestamp Generator • Tools Hub</title>
+  <link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="../../">Tools Hub</a>
+    <nav>
+      <a href="../../">Home</a>
+      <a href="../" class="active">Scripts</a>
+      <a href="https://YOUR-MINECRAFT-SITE-HERE.example" target="_blank" rel="noopener">Minecraft</a>
+    </nav>
+  </header>
+
+  <main class="page-shell narrow">
+    <section class="page-heading compact">
+      <a class="back-link" href="../">← Scripts</a>
+      <p class="eyebrow">DISCORD TOOL</p>
+      <h1>Timestamp Generator</h1>
+      <p>Pick a local date and time. Discord will automatically convert it for everyone else.</p>
+    </section>
+
+    <section class="generator-card">
+      <div class="field-grid two-col">
+        <label class="field">
+          <span>Date</span>
+          <input id="dateInput" type="date">
+        </label>
+
+        <label class="field">
+          <span>Time</span>
+          <input id="timeInput" type="time">
+        </label>
+      </div>
+
+      <div class="quick-row">
+        <button class="quick-btn" data-offset="today">Today</button>
+        <button class="quick-btn" data-offset="tomorrow">Tomorrow</button>
+        <button class="quick-btn" data-time="15:00">3:00 PM</button>
+        <button class="quick-btn" data-time="15:30">3:30 PM</button>
+        <button class="quick-btn" data-time="16:00">4:00 PM</button>
+      </div>
+
+      <label class="field">
+        <span>Discord format</span>
+        <select id="styleInput">
+          <option value="t">Short time — 3:30 PM</option>
+          <option value="T">Long time — 3:30:00 PM</option>
+          <option value="d">Short date — 08/11/2026</option>
+          <option value="D">Long date — August 11, 2026</option>
+          <option value="f" selected>Date & time — August 11, 2026 3:30 PM</option>
+          <option value="F">Full date & time — Tuesday, August 11, 2026 3:30 PM</option>
+          <option value="R">Relative — in 4 hours</option>
+        </select>
+      </label>
+
+      <div class="timezone-line">
+        <span>Your detected timezone</span>
+        <strong id="timezoneLabel">Detecting…</strong>
+      </div>
+
+      <div class="result-panel">
+        <div class="result-header">
+          <span>Discord code</span>
+          <button id="copyButton" class="copy-button">Copy</button>
+        </div>
+        <code id="output">&lt;t:0000000000:f&gt;</code>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-box">
+          <span>Unix timestamp</span>
+          <strong id="unixOutput">—</strong>
+        </div>
+        <div class="info-box">
+          <span>Your local preview</span>
+          <strong id="previewOutput">—</strong>
+        </div>
+      </div>
+
+      <p class="helper">
+        Discord stores the moment as Unix time, then displays it using each viewer's own timezone.
+      </p>
+    </section>
+  </main>
+
+  <div id="toast" class="toast">Copied to clipboard</div>
+
+  <footer>
+    <span>Tools Hub</span>
+    <span><a href="../">More scripts</a></span>
+  </footer>
+
+  <script src="./script.js"></script>
+</body>
+</html>
