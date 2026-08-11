@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Yahoo Direct Test</title>
+</head>
+<body style="font-family:Arial; padding:30px; background:#111; color:white;">
+
+  <h1>Yahoo Direct Browser Test</h1>
+
+  <button onclick="testYahoo()">Test AMD</button>
+
+  <pre id="output" style="margin-top:20px; white-space:pre-wrap;"></pre>
+
+  <script>
+    async function testYahoo() {
+      const output = document.getElementById("output");
+
+      output.textContent = "Testing...";
+
+      const url =
+        "https://query1.finance.yahoo.com/v10/finance/quoteSummary/AMD?modules=financialData";
+
+      try {
+        const response = await fetch(url);
+
+        output.textContent += `\nHTTP status: ${response.status}`;
+
+        const data = await response.json();
+
+        output.textContent += "\n\n" + JSON.stringify(data, null, 2);
+
+        const financialData =
+          data?.quoteSummary?.result?.[0]?.financialData;
+
+        const current =
+          financialData?.currentPrice?.raw;
+
+        const target =
+          financialData?.targetMeanPrice?.raw;
+
+        output.textContent +=
+          `\n\nCurrent Price: ${current}\nAverage Target: ${target}`;
+
+      } catch (error) {
+        output.textContent =
+          "REQUEST FAILED\n\n" +
+          error.toString() +
+          "\n\nOpen browser DevTools → Console for more detail.";
+
+        console.error(error);
+      }
+    }
+  </script>
+
+</body>
+</html>
