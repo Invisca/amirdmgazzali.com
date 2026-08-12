@@ -7,7 +7,7 @@ const navItems = [
     href: "https://herd.amirdmgazzali.com/",
     external: true
   },
-  { label: "Admin", href: "/admin/" }
+  { label: "Login", href: "/admin/" }
 ];
 
 function renderNav(activePage) {
