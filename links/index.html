@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Links</title>
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #0b0d12;
+      color: #f5f7fb;
+      font-family: Arial, sans-serif;
+    }
+
+    header {
+      border-bottom: 1px solid #242936;
+      padding: 24px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 30px;
+    }
+
+    header p {
+      margin: 8px 0 0;
+      color: #9ca6b5;
+    }
+
+    main {
+      width: min(1200px, calc(100% - 32px));
+      margin: 36px auto;
+    }
+
+    #linksGrid {
+      display: grid;
+      grid-template-columns: repeat(
+        auto-fill,
+        minmax(280px, 1fr)
+      );
+      gap: 18px;
+    }
+
+    .link-card {
+      display: block;
+      overflow: hidden;
+      background: #151922;
+      border: 1px solid #2a3040;
+      border-radius: 14px;
+      color: inherit;
+      text-decoration: none;
+      transition:
+        transform 0.15s ease,
+        border-color 0.15s ease;
+    }
+
+    .link-card:hover {
+      transform: translateY(-3px);
+      border-color: #5664a9;
+    }
+
+    .thumbnail {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      display: block;
+      background: #0e1118;
+    }
+
+    .thumbnail-placeholder {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      display: grid;
+      place-items: center;
+      background: #0e1118;
+      color: #5f6877;
+      font-size: 42px;
+    }
+
+    .content {
+      padding: 18px;
+    }
+
+    .category {
+      display: inline-block;
+      margin-bottom: 8px;
+      color: #8d9bff;
+      font-size: 12px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .title {
+      margin: 0;
+      font-size: 21px;
+    }
+
+    .description {
+      margin: 10px 0 0;
+      color: #9ca6b5;
+      line-height: 1.5;
+    }
+
+    .domain {
+      margin-top: 14px;
+      color: #6f7b8f;
+      font-size: 13px;
+    }
+
+    .message {
+      color: #9ca6b5;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- =========================
+       PAGE HEADER
+       ========================= -->
+  <header>
+    <h1>Links</h1>
+    <p>Useful sites, tools, and resources.</p>
+  </header>
+
+
+  <!-- =========================
+       LINK CARDS
+       ========================= -->
+  <main>
+    <div id="linksGrid">
+      <p class="message">
+        Loading links...
+      </p>
+    </div>
+  </main>
+
+
+  <script>
+
+    /* =========================
+       SUPABASE CONNECTION
+       ========================= */
+
+    const SUPABASE_URL =
+      "https://yyjqfzrxyscmszybezvm.supabase.co";
+
+    const SUPABASE_KEY =
+      "sb_publishable_FwJsCc4z9wpqb_pF1oSFIw_yJUjbw9V";
+
+    const supabaseClient =
+      supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
+
+
+    /* =========================
+       PAGE ELEMENTS
+       ========================= */
+
+    const linksGrid =
+      document.getElementById("linksGrid");
+
+
+    /* =========================
+       HELPERS
+       ========================= */
+
+    function getDomain(url) {
+      try {
+        return new URL(url).hostname
+          .replace(/^www\./, "");
+      } catch {
+        return url;
+      }
+    }
+
+
+    /* =========================
+       LOAD LINKS
+       ========================= */
+
+    async function loadLinks() {
+      const { data, error } =
+        await supabaseClient
+          .from("links")
+          .select("*")
+          .order(
+            "sort_order",
+            { ascending: true }
+          )
+          .order(
+            "created_at",
+            { ascending: false }
+          );
+
+      if (error) {
+        console.error(error);
+
+        linksGrid.innerHTML = `
+          <p class="message">
+            Could not load links.
+          </p>
+        `;
+
+        return;
+      }
+
+
+      if (!data || data.length === 0) {
+        linksGrid.innerHTML = `
+          <p class="message">
+            No links have been added yet.
+          </p>
+        `;
+
+        return;
+      }
+
+
+      linksGrid.innerHTML = "";
+
+
+      /* =========================
+         BUILD LINK CARDS
+         ========================= */
+
+      data.forEach((link) => {
+        const card =
+          document.createElement("a");
+
+        card.className =
+          "link-card";
+
+        card.href =
+          link.url;
+
+        card.target =
+          "_blank";
+
+        card.rel =
+          "noopener noreferrer";
+
+
+        const thumbnail =
+          link.thumbnail_url
+            ? `
+              <img
+                class="thumbnail"
+                src="${link.thumbnail_url}"
+                alt=""
+                loading="lazy"
+              >
+            `
+            : `
+              <div class="thumbnail-placeholder">
+                ↗
+              </div>
+            `;
+
+
+        const category =
+          link.category
+            ? `
+              <div class="category">
+                ${link.category}
+              </div>
+            `
+            : "";
+
+
+        const description =
+          link.description
+            ? `
+              <p class="description">
+                ${link.description}
+              </p>
+            `
+            : "";
+
+
+        card.innerHTML = `
+          ${thumbnail}
+
+          <div class="content">
+
+            ${category}
+
+            <h2 class="title">
+              ${link.title}
+            </h2>
+
+            ${description}
+
+            <div class="domain">
+              ${getDomain(link.url)}
+            </div>
+
+          </div>
+        `;
+
+        linksGrid.appendChild(card);
+      });
+    }
+
+
+    /* =========================
+       START PAGE
+       ========================= */
+
+    loadLinks();
+
+  </script>
+
+</body>
+</html>
