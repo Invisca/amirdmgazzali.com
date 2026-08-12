@@ -73,6 +73,28 @@
       margin-top: 12px;
       color: #9ca6b5;
     }
+
+    label {
+      display: block;
+      margin-bottom: 14px;
+      color: #cfd5df;
+    }
+
+    input,
+      textarea {
+      width: 100%;
+      margin-top: 7px;
+      padding: 11px;
+      border-radius: 8px;
+      border: 1px solid #303746;
+      background: #0e1118;
+      color: white;
+    }
+
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
   </style>
 </head>
 
@@ -87,32 +109,62 @@
   </header>
 
   <main>
-    <div class="card">
-      <h2>Welcome</h2>
 
-      <p class="muted">
-        You are logged in.
-      </p>
+  <div class="card">
+    <h2>Welcome</h2>
 
-      <p id="userEmail"></p>
+    <p class="muted">
+      You are logged in.
+    </p>
 
-      <div id="status">
-        Checking session...
-      </div>
+    <p id="userEmail"></p>
+
+    <div id="status">
+      Checking session...
     </div>
+  </div>
 
-    <div class="card">
-      <h2>Links</h2>
+  <div class="card">
+    <h2>Add Link</h2>
 
-      <p class="muted">
-        Link management will go here next.
-      </p>
+    <label>
+      Title
+      <input id="titleInput" type="text" placeholder="Example Website">
+    </label>
 
-      <button class="primary" disabled>
-        Add Link
-      </button>
-    </div>
-  </main>
+    <label>
+      URL
+      <input id="urlInput" type="url" placeholder="https://example.com">
+    </label>
+
+    <label>
+      Description
+      <textarea id="descriptionInput" placeholder="Short description"></textarea>
+    </label>
+
+    <label>
+      Thumbnail URL
+      <input id="thumbnailInput" type="url" placeholder="https://example.com/image.jpg">
+    </label>
+
+    <label>
+      Category
+      <input id="categoryInput" type="text" placeholder="Tools">
+    </label>
+
+    <label>
+      Sort Order
+      <input id="sortOrderInput" type="number" value="0">
+    </label>
+
+    <button id="addLinkButton" class="primary">
+      Add Link
+    </button>
+
+    <div id="linkMessage" class="muted"></div>
+  </div>
+
+</main>
 
   <script>
     const SUPABASE_URL =
@@ -177,6 +229,79 @@
       }
     );
 
+    const addLinkButton =
+      document.getElementById("addLinkButton");
+    
+    const linkMessage =
+      document.getElementById("linkMessage");
+    
+    addLinkButton.addEventListener("click", async () => {
+      const title =
+        document.getElementById("titleInput").value.trim();
+    
+      const url =
+        document.getElementById("urlInput").value.trim();
+    
+      const description =
+        document.getElementById("descriptionInput").value.trim();
+    
+      const thumbnailUrl =
+        document.getElementById("thumbnailInput").value.trim();
+    
+      const category =
+        document.getElementById("categoryInput").value.trim();
+    
+      const sortOrder =
+        Number(
+          document.getElementById("sortOrderInput").value || 0
+        );
+    
+      if (!title || !url) {
+        linkMessage.textContent =
+          "Title and URL are required.";
+    
+        return;
+      }
+    
+      linkMessage.textContent =
+        "Saving...";
+    
+      const { data, error } =
+        await supabaseClient
+          .from("links")
+          .insert([
+            {
+              title: title,
+              url: url,
+              description: description || null,
+              thumbnail_url: thumbnailUrl || null,
+              category: category || null,
+              sort_order: sortOrder
+            }
+          ])
+          .select();
+    
+      if (error) {
+        console.error(error);
+    
+        linkMessage.textContent =
+          "Error: " + error.message;
+    
+        return;
+      }
+    
+      linkMessage.textContent =
+        "Link added successfully.";
+    
+      document.getElementById("titleInput").value = "";
+      document.getElementById("urlInput").value = "";
+      document.getElementById("descriptionInput").value = "";
+      document.getElementById("thumbnailInput").value = "";
+      document.getElementById("categoryInput").value = "";
+      document.getElementById("sortOrderInput").value = "0";
+    });
+
+checkSession();
     checkSession();
   </script>
 
