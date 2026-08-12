@@ -6,6 +6,7 @@
 
   <title>Admin Dashboard</title>
 
+  <!-- Supabase JavaScript library -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -81,7 +82,7 @@
     }
 
     input,
-      textarea {
+    textarea {
       width: 100%;
       margin-top: 7px;
       padding: 11px;
@@ -95,11 +96,41 @@
       min-height: 90px;
       resize: vertical;
     }
+
+    /* Saved link cards */
+    .link-item {
+      border: 1px solid #303746;
+      border-radius: 10px;
+      padding: 14px;
+      margin-top: 12px;
+      background: #0e1118;
+    }
+
+    .link-item h3 {
+      margin: 0 0 6px;
+    }
+
+    .link-item p {
+      margin: 4px 0;
+      color: #9ca6b5;
+    }
+
+    .link-actions {
+      margin-top: 10px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .delete-button {
+      background: #7a2d35;
+      color: white;
+    }
   </style>
 </head>
 
 <body>
 
+  <!-- Top navigation -->
   <header>
     <h1>Admin Dashboard</h1>
 
@@ -110,63 +141,118 @@
 
   <main>
 
-  <div class="card">
-    <h2>Welcome</h2>
+    <!-- =========================
+         WELCOME / LOGIN STATUS
+         ========================= -->
+    <div class="card">
+      <h2>Welcome</h2>
 
-    <p class="muted">
-      You are logged in.
-    </p>
+      <p class="muted">
+        You are logged in.
+      </p>
 
-    <p id="userEmail"></p>
+      <p id="userEmail"></p>
 
-    <div id="status">
-      Checking session...
+      <div id="status">
+        Checking session...
+      </div>
     </div>
-  </div>
 
-  <div class="card">
-    <h2>Add Link</h2>
 
-    <label>
-      Title
-      <input id="titleInput" type="text" placeholder="Example Website">
-    </label>
+    <!-- =========================
+         ADD LINK FORM
+         ========================= -->
+    <div class="card">
+      <h2>Add Link</h2>
 
-    <label>
-      URL
-      <input id="urlInput" type="url" placeholder="https://example.com">
-    </label>
+      <!-- Link title -->
+      <label>
+        Title
+        <input
+          id="titleInput"
+          type="text"
+          placeholder="Example Website"
+        >
+      </label>
 
-    <label>
-      Description
-      <textarea id="descriptionInput" placeholder="Short description"></textarea>
-    </label>
+      <!-- Main website URL -->
+      <label>
+        URL
+        <input
+          id="urlInput"
+          type="url"
+          placeholder="https://example.com"
+        >
+      </label>
 
-    <label>
-      Thumbnail URL
-      <input id="thumbnailInput" type="url" placeholder="https://example.com/image.jpg">
-    </label>
+      <!-- Optional description -->
+      <label>
+        Description
+        <textarea
+          id="descriptionInput"
+          placeholder="Short description"
+        ></textarea>
+      </label>
 
-    <label>
-      Category
-      <input id="categoryInput" type="text" placeholder="Tools">
-    </label>
+      <!-- Optional thumbnail image URL -->
+      <label>
+        Thumbnail URL
+        <input
+          id="thumbnailInput"
+          type="url"
+          placeholder="https://example.com/image.jpg"
+        >
+      </label>
 
-    <label>
-      Sort Order
-      <input id="sortOrderInput" type="number" value="0">
-    </label>
+      <!-- Optional category -->
+      <label>
+        Category
+        <input
+          id="categoryInput"
+          type="text"
+          placeholder="Tools"
+        >
+      </label>
 
-    <button id="addLinkButton" class="primary">
-      Add Link
-    </button>
+      <!-- Controls display order later -->
+      <label>
+        Sort Order
+        <input
+          id="sortOrderInput"
+          type="number"
+          value="0"
+        >
+      </label>
 
-    <div id="linkMessage" class="muted"></div>
-  </div>
+      <button id="addLinkButton" class="primary">
+        Add Link
+      </button>
 
-</main>
+      <!-- Success/error message -->
+      <div id="linkMessage" class="muted"></div>
+    </div>
+
+
+    <!-- =========================
+         SAVED LINKS
+         ========================= -->
+    <div class="card">
+      <h2>Saved Links</h2>
+
+      <!-- JavaScript fills this section automatically -->
+      <div id="savedLinks">
+        Loading links...
+      </div>
+    </div>
+
+  </main>
+
 
   <script>
+    /* =========================
+       SUPABASE CONNECTION
+       ========================= */
+
     const SUPABASE_URL =
       "https://yyjqfzrxyscmszybezvm.supabase.co";
 
@@ -179,6 +265,11 @@
         SUPABASE_KEY
       );
 
+
+    /* =========================
+       PAGE ELEMENTS
+       ========================= */
+
     const status =
       document.getElementById("status");
 
@@ -187,6 +278,20 @@
 
     const logoutButton =
       document.getElementById("logoutButton");
+
+    const addLinkButton =
+      document.getElementById("addLinkButton");
+
+    const linkMessage =
+      document.getElementById("linkMessage");
+
+    const savedLinks =
+      document.getElementById("savedLinks");
+
+
+    /* =========================
+       CHECK LOGIN SESSION
+       ========================= */
 
     async function checkSession() {
       const {
@@ -204,6 +309,8 @@
         return;
       }
 
+      // If user is not logged in,
+      // send them back to the login page.
       if (!session) {
         window.location.href =
           "/admin/";
@@ -211,12 +318,18 @@
         return;
       }
 
+      // Show logged-in user's email.
       userEmail.textContent =
         session.user.email;
 
       status.textContent =
         "Session active";
     }
+
+
+    /* =========================
+       LOG OUT
+       ========================= */
 
     logoutButton.addEventListener(
       "click",
@@ -229,80 +342,272 @@
       }
     );
 
-    const addLinkButton =
-      document.getElementById("addLinkButton");
-    
-    const linkMessage =
-      document.getElementById("linkMessage");
-    
-    addLinkButton.addEventListener("click", async () => {
-      const title =
-        document.getElementById("titleInput").value.trim();
-    
-      const url =
-        document.getElementById("urlInput").value.trim();
-    
-      const description =
-        document.getElementById("descriptionInput").value.trim();
-    
-      const thumbnailUrl =
-        document.getElementById("thumbnailInput").value.trim();
-    
-      const category =
-        document.getElementById("categoryInput").value.trim();
-    
-      const sortOrder =
-        Number(
-          document.getElementById("sortOrderInput").value || 0
-        );
-    
-      if (!title || !url) {
+
+    /* =========================
+       ADD NEW LINK
+       ========================= */
+
+    addLinkButton.addEventListener(
+      "click",
+      async () => {
+
+        // Read form values.
+        const title =
+          document
+            .getElementById("titleInput")
+            .value
+            .trim();
+
+        const url =
+          document
+            .getElementById("urlInput")
+            .value
+            .trim();
+
+        const description =
+          document
+            .getElementById("descriptionInput")
+            .value
+            .trim();
+
+        const thumbnailUrl =
+          document
+            .getElementById("thumbnailInput")
+            .value
+            .trim();
+
+        const category =
+          document
+            .getElementById("categoryInput")
+            .value
+            .trim();
+
+        const sortOrder =
+          Number(
+            document
+              .getElementById("sortOrderInput")
+              .value || 0
+          );
+
+        // Require at least title + URL.
+        if (!title || !url) {
+          linkMessage.textContent =
+            "Title and URL are required.";
+
+          return;
+        }
+
         linkMessage.textContent =
-          "Title and URL are required.";
-    
-        return;
+          "Saving...";
+
+        // Insert link into Supabase.
+        const { error } =
+          await supabaseClient
+            .from("links")
+            .insert([
+              {
+                title: title,
+                url: url,
+                description:
+                  description || null,
+
+                thumbnail_url:
+                  thumbnailUrl || null,
+
+                category:
+                  category || null,
+
+                sort_order:
+                  sortOrder
+              }
+            ]);
+
+        if (error) {
+          console.error(error);
+
+          linkMessage.textContent =
+            "Error: " + error.message;
+
+          return;
+        }
+
+        linkMessage.textContent =
+          "Link added successfully.";
+
+        // Clear form after saving.
+        document.getElementById(
+          "titleInput"
+        ).value = "";
+
+        document.getElementById(
+          "urlInput"
+        ).value = "";
+
+        document.getElementById(
+          "descriptionInput"
+        ).value = "";
+
+        document.getElementById(
+          "thumbnailInput"
+        ).value = "";
+
+        document.getElementById(
+          "categoryInput"
+        ).value = "";
+
+        document.getElementById(
+          "sortOrderInput"
+        ).value = "0";
+
+        // Refresh saved links list.
+        loadLinks();
       }
-    
-      linkMessage.textContent =
-        "Saving...";
-    
+    );
+
+
+    /* =========================
+       LOAD SAVED LINKS
+       ========================= */
+
+    async function loadLinks() {
+      savedLinks.textContent =
+        "Loading links...";
+
       const { data, error } =
         await supabaseClient
           .from("links")
-          .insert([
-            {
-              title: title,
-              url: url,
-              description: description || null,
-              thumbnail_url: thumbnailUrl || null,
-              category: category || null,
-              sort_order: sortOrder
-            }
-          ])
-          .select();
-    
+          .select("*")
+          .order(
+            "sort_order",
+            { ascending: true }
+          )
+          .order(
+            "created_at",
+            { ascending: false }
+          );
+
       if (error) {
         console.error(error);
-    
-        linkMessage.textContent =
-          "Error: " + error.message;
-    
+
+        savedLinks.textContent =
+          "Error loading links: " +
+          error.message;
+
         return;
       }
-    
-      linkMessage.textContent =
-        "Link added successfully.";
-    
-      document.getElementById("titleInput").value = "";
-      document.getElementById("urlInput").value = "";
-      document.getElementById("descriptionInput").value = "";
-      document.getElementById("thumbnailInput").value = "";
-      document.getElementById("categoryInput").value = "";
-      document.getElementById("sortOrderInput").value = "0";
-    });
 
-checkSession();
+      // No links yet.
+      if (!data || data.length === 0) {
+        savedLinks.textContent =
+          "No links saved yet.";
+
+        return;
+      }
+
+      // Clear loading text.
+      savedLinks.innerHTML = "";
+
+      // Create one card per link.
+      data.forEach((link) => {
+        const item =
+          document.createElement("div");
+
+        item.className =
+          "link-item";
+
+        item.innerHTML = `
+          <h3>${link.title}</h3>
+
+          <p>
+            <a
+              href="${link.url}"
+              target="_blank"
+              rel="noopener"
+              style="color:#7c8cff;"
+            >
+              ${link.url}
+            </a>
+          </p>
+
+          ${
+            link.description
+              ? `<p>${link.description}</p>`
+              : ""
+          }
+
+          ${
+            link.category
+              ? `<p>Category: ${link.category}</p>`
+              : ""
+          }
+
+          <div class="link-actions">
+            <button
+              class="delete-button"
+              data-id="${link.id}"
+            >
+              Delete
+            </button>
+          </div>
+        `;
+
+        savedLinks.appendChild(item);
+      });
+
+
+      /* =========================
+         DELETE LINK BUTTONS
+         ========================= */
+
+      document
+        .querySelectorAll(".delete-button")
+        .forEach((button) => {
+
+          button.addEventListener(
+            "click",
+            async () => {
+
+              const id =
+                button.dataset.id;
+
+              const confirmed =
+                confirm(
+                  "Delete this link?"
+                );
+
+              if (!confirmed) {
+                return;
+              }
+
+              const { error } =
+                await supabaseClient
+                  .from("links")
+                  .delete()
+                  .eq("id", id);
+
+              if (error) {
+                alert(
+                  "Delete failed: " +
+                  error.message
+                );
+
+                return;
+              }
+
+              // Reload list after delete.
+              loadLinks();
+            }
+          );
+        });
+    }
+
+
+    /* =========================
+       START DASHBOARD
+       ========================= */
+
     checkSession();
+    loadLinks();
   </script>
 
 </body>
