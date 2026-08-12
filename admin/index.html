@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: #0b0d12;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+
+    .card {
+      width: min(360px, calc(100% - 40px));
+      background: #151922;
+      border: 1px solid #2a3040;
+      border-radius: 14px;
+      padding: 28px;
+    }
+
+    h1 {
+      margin-top: 0;
+    }
+
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      margin: 8px 0;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #303746;
+      background: #0e1118;
+      color: white;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 12px;
+      padding: 12px;
+      border: 0;
+      border-radius: 8px;
+      background: #7c8cff;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #message {
+      margin-top: 14px;
+      color: #aaa;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="card">
+    <h1>Admin Login</h1>
+
+    <input id="email" type="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password">
+
+    <button id="loginButton">Sign In</button>
+
+    <div id="message"></div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://yyjqfzrxyscmszybezvm.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_FwJsCc4z9wpqb_pF1oSFIw_yJUjbw9V";
+
+    const supabaseClient = supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const loginButton = document.getElementById("loginButton");
+    const message = document.getElementById("message");
+
+    loginButton.addEventListener("click", async () => {
+      message.textContent = "Signing in...";
+
+      const { data, error } =
+        await supabaseClient.auth.signInWithPassword({
+          email: emailInput.value,
+          password: passwordInput.value
+        });
+
+      if (error) {
+        message.textContent = "Login failed: " + error.message;
+        return;
+      }
+
+      message.textContent = "Login successful.";
+
+      // Later we'll redirect this to the real admin dashboard.
+      window.location.href = "/admin/dashboard/";
+    });
+  </script>
+
+</body>
+</html>
