@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Admin Dashboard</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #0b0d12;
+      color: #f5f7fb;
+      font-family: Arial, sans-serif;
+    }
+
+    header {
+      border-bottom: 1px solid #242936;
+      padding: 18px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    main {
+      width: min(1000px, calc(100% - 32px));
+      margin: 40px auto;
+    }
+
+    .card {
+      background: #151922;
+      border: 1px solid #2a3040;
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 18px;
+    }
+
+    .muted {
+      color: #9ca6b5;
+    }
+
+    button {
+      border: 0;
+      border-radius: 8px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .primary {
+      background: #7c8cff;
+      color: white;
+    }
+
+    .secondary {
+      background: #242936;
+      color: white;
+    }
+
+    #status {
+      margin-top: 12px;
+      color: #9ca6b5;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>Admin Dashboard</h1>
+
+    <button id="logoutButton" class="secondary">
+      Log Out
+    </button>
+  </header>
+
+  <main>
+    <div class="card">
+      <h2>Welcome</h2>
+
+      <p class="muted">
+        You are logged in.
+      </p>
+
+      <p id="userEmail"></p>
+
+      <div id="status">
+        Checking session...
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Links</h2>
+
+      <p class="muted">
+        Link management will go here next.
+      </p>
+
+      <button class="primary" disabled>
+        Add Link
+      </button>
+    </div>
+  </main>
+
+  <script>
+    const SUPABASE_URL =
+      "https://yyjqfzrxyscmszybezvm.supabase.co";
+
+    const SUPABASE_KEY =
+      "sb_publishable_FwJsCc4z9wpqb_pF1oSFIw_yJUjbw9V";
+
+    const supabaseClient =
+      supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
+
+    const status =
+      document.getElementById("status");
+
+    const userEmail =
+      document.getElementById("userEmail");
+
+    const logoutButton =
+      document.getElementById("logoutButton");
+
+    async function checkSession() {
+      const {
+        data: { session },
+        error
+      } =
+        await supabaseClient.auth.getSession();
+
+      if (error) {
+        console.error(error);
+
+        window.location.href =
+          "/admin/";
+
+        return;
+      }
+
+      if (!session) {
+        window.location.href =
+          "/admin/";
+
+        return;
+      }
+
+      userEmail.textContent =
+        session.user.email;
+
+      status.textContent =
+        "Session active";
+    }
+
+    logoutButton.addEventListener(
+      "click",
+      async () => {
+
+        await supabaseClient.auth.signOut();
+
+        window.location.href =
+          "/admin/";
+      }
+    );
+
+    checkSession();
+  </script>
+
+</body>
+</html>
