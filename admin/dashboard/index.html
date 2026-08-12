@@ -840,6 +840,103 @@
        START DASHBOARD
        ========================= */
 
+    
+    /* =========================
+       AUTO-FILL LINK METADATA
+       ========================= */
+    
+    const urlInput =
+      document.getElementById("urlInput");
+    
+    urlInput.addEventListener(
+      "change",
+      async () => {
+    
+        const url =
+          urlInput.value.trim();
+    
+        if (!url) {
+          return;
+        }
+    
+        linkMessage.textContent =
+          "Fetching link info...";
+    
+        try {
+          const response =
+            await fetch(
+              "https://link-metadata-api.onrender.com/metadata?url=" +
+              encodeURIComponent(url)
+            );
+    
+          if (!response.ok) {
+            throw new Error(
+              "Metadata request failed"
+            );
+          }
+    
+          const metadata =
+            await response.json();
+    
+    
+          /* Only auto-fill fields that
+             are currently empty */
+    
+          const titleInput =
+            document.getElementById(
+              "titleInput"
+            );
+    
+          const descriptionInput =
+            document.getElementById(
+              "descriptionInput"
+            );
+    
+          const thumbnailInput =
+            document.getElementById(
+              "thumbnailInput"
+            );
+    
+    
+          if (
+            metadata.title &&
+            !titleInput.value.trim()
+          ) {
+            titleInput.value =
+              metadata.title;
+          }
+    
+    
+          if (
+            metadata.description &&
+            !descriptionInput.value.trim()
+          ) {
+            descriptionInput.value =
+              metadata.description;
+          }
+    
+    
+          if (
+            metadata.image &&
+            !thumbnailInput.value.trim()
+          ) {
+            thumbnailInput.value =
+              metadata.image;
+          }
+    
+    
+          linkMessage.textContent =
+            "Link info loaded.";
+    
+        } catch (error) {
+          console.error(error);
+    
+          linkMessage.textContent =
+            "Could not automatically load link info.";
+        }
+      }
+    );
+
     checkSession();
     loadLinks();
 
