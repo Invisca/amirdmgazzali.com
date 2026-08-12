@@ -13,6 +13,10 @@ const navItems = [
 function renderNav(activePage) {
   const nav = document.getElementById("mainNav");
 
+  if (!nav) {
+    return;
+  }
+
   nav.innerHTML = navItems.map(item => {
     const active =
       item.label.toLowerCase() === activePage.toLowerCase()
