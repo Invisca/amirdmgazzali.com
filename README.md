@@ -35,6 +35,8 @@ Then configure the DNS records required by GitHub Pages at your DNS provider.
 
 ## Adding more scripts
 
+deploy refresh
+
 Create another folder under `/scripts/`, for example:
 
 `/scripts/my-new-tool/index.html`
