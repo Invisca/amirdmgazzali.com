@@ -138,6 +138,22 @@
       display: flex;
       gap: 8px;
     }
+    .thumbnail-preview {
+      margin-top: -4px;
+      margin-bottom: 18px;
+      max-width: 420px;
+      border: 1px solid #303746;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #0e1118;
+    }
+    
+    .thumbnail-preview img {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      display: block;
+    }
   </style>
 </head>
 
@@ -219,6 +235,15 @@
           placeholder="https://example.com/image.jpg"
         >
       </label>
+      
+      <!-- Thumbnail preview -->
+      <div id="thumbnailPreviewWrap" class="thumbnail-preview hidden">
+        <img
+          id="thumbnailPreview"
+          src=""
+          alt="Thumbnail preview"
+        >
+      </div>
 
       <!-- Optional category -->
       <label>
@@ -334,6 +359,59 @@
        currently being edited. */
     let editingId = null;
 
+    /* =========================
+       THUMBNAIL PREVIEW
+       ========================= */
+    
+    const thumbnailInput =
+      document.getElementById("thumbnailInput");
+    
+    const thumbnailPreviewWrap =
+      document.getElementById("thumbnailPreviewWrap");
+    
+    const thumbnailPreview =
+      document.getElementById("thumbnailPreview");
+    
+    
+    function updateThumbnailPreview() {
+      const url =
+        thumbnailInput.value.trim();
+    
+      if (!url) {
+        thumbnailPreview.src = "";
+    
+        thumbnailPreviewWrap.classList.add(
+          "hidden"
+        );
+    
+        return;
+      }
+    
+      thumbnailPreview.src = url;
+    
+      thumbnailPreviewWrap.classList.remove(
+        "hidden"
+      );
+    }
+    
+    
+    /* Update when URL changes manually */
+    thumbnailInput.addEventListener(
+      "input",
+      updateThumbnailPreview
+    );
+    
+    
+    /* Hide preview if image fails */
+    thumbnailPreview.addEventListener(
+      "error",
+      () => {
+        thumbnailPreviewWrap.classList.add(
+          "hidden"
+        );
+      }
+    );
+
 
     /* =========================
        CHECK LOGIN SESSION
@@ -406,6 +484,7 @@
       document.getElementById(
         "thumbnailInput"
       ).value = "";
+      updateThumbnailPreview();
 
       document.getElementById(
         "categoryInput"
@@ -421,6 +500,7 @@
       editingId = null;
 
       clearLinkForm();
+      updateThumbnailPreview();
 
       formHeading.textContent =
         "Add Link";
@@ -565,8 +645,9 @@
 
         linkMessage.textContent =
           "Link added successfully.";
-
+        
         clearLinkForm();
+        updateThumbnailPreview();
 
         loadLinks();
       }
@@ -928,6 +1009,8 @@
         ) {
           thumbnailInput.value =
             metadata.image;
+        
+          updateThumbnailPreview();
         }
     
         linkMessage.textContent =
