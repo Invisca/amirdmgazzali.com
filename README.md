@@ -1,44 +1,32 @@
 # Tools Hub
 
-A small static website designed for GitHub Pages.
+A personal static website hosted on GitHub Pages for scripts, utilities, saved links, and project shortcuts.
 
 ## Pages
 
 - `/` — Home page
 - `/scripts/` — Scripts and utilities
 - `/scripts/discord-timestamp/` — Discord timestamp generator
+- `/links/` — Public saved links page
+- `/admin/` — Admin login
+- `/admin/dashboard/` — Admin dashboard for managing links
+- `https://herd.amirdmgazzali.com/` — Minecraft server website
 
-## Before publishing
+## Shared navigation
 
-Search the project for:
+The top navigation is controlled from:
 
-`https://YOUR-MINECRAFT-SITE-HERE.example`
+`/assets/nav.js`
 
-and replace it with the URL of your existing Minecraft website.
+Pages load the shared navigation and specify which page should be highlighted.
 
-## GitHub Pages
+For example:
 
-1. Create a new GitHub repository.
-2. Upload the contents of this folder to the repository root.
-3. Open **Settings → Pages**.
-4. Under **Build and deployment**, choose **Deploy from a branch**.
-5. Select your main branch and `/ (root)`.
-6. Add your custom domain in the GitHub Pages settings if desired.
+```html
+<nav id="mainNav"></nav>
 
-## Custom domain
+<script src="/assets/nav.js"></script>
 
-If this new site will use the root domain, create a `CNAME` file in the repository root containing only the domain name, for example:
-
-`example.com`
-
-Then configure the DNS records required by GitHub Pages at your DNS provider.
-
-## Adding more scripts
-
-deploy refresh
-
-Create another folder under `/scripts/`, for example:
-
-`/scripts/my-new-tool/index.html`
-
-Then add another card to `/scripts/index.html`.
+<script>
+  renderNav("Home");
+</script>
