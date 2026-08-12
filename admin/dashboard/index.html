@@ -70,6 +70,20 @@
       color: white;
     }
 
+    .edit-button {
+      background: #33406a;
+      color: white;
+    }
+
+    .delete-button {
+      background: #7a2d35;
+      color: white;
+    }
+
+    .hidden {
+      display: none;
+    }
+
     #status {
       margin-top: 12px;
       color: #9ca6b5;
@@ -97,7 +111,11 @@
       resize: vertical;
     }
 
-    /* Saved link cards */
+    .form-actions {
+      display: flex;
+      gap: 8px;
+    }
+
     .link-item {
       border: 1px solid #303746;
       border-radius: 10px;
@@ -120,17 +138,14 @@
       display: flex;
       gap: 8px;
     }
-
-    .delete-button {
-      background: #7a2d35;
-      color: white;
-    }
   </style>
 </head>
 
 <body>
 
-  <!-- Top navigation -->
+  <!-- =========================
+       TOP NAVIGATION
+       ========================= -->
   <header>
     <h1>Admin Dashboard</h1>
 
@@ -138,6 +153,7 @@
       Log Out
     </button>
   </header>
+
 
   <main>
 
@@ -160,10 +176,10 @@
 
 
     <!-- =========================
-         ADD LINK FORM
+         ADD / EDIT LINK FORM
          ========================= -->
     <div class="card">
-      <h2>Add Link</h2>
+      <h2 id="formHeading">Add Link</h2>
 
       <!-- Link title -->
       <label>
@@ -175,7 +191,7 @@
         >
       </label>
 
-      <!-- Main website URL -->
+      <!-- Main URL -->
       <label>
         URL
         <input
@@ -194,7 +210,7 @@
         ></textarea>
       </label>
 
-      <!-- Optional thumbnail image URL -->
+      <!-- Optional thumbnail -->
       <label>
         Thumbnail URL
         <input
@@ -214,7 +230,7 @@
         >
       </label>
 
-      <!-- Controls display order later -->
+      <!-- Display order -->
       <label>
         Sort Order
         <input
@@ -224,12 +240,31 @@
         >
       </label>
 
-      <button id="addLinkButton" class="primary">
-        Add Link
-      </button>
+      <!-- Add / Edit controls -->
+      <div class="form-actions">
 
-      <!-- Success/error message -->
-      <div id="linkMessage" class="muted"></div>
+        <button
+          id="addLinkButton"
+          class="primary"
+        >
+          Add Link
+        </button>
+
+        <button
+          id="cancelEditButton"
+          class="secondary hidden"
+        >
+          Cancel Edit
+        </button>
+
+      </div>
+
+      <!-- Success / error message -->
+      <div
+        id="linkMessage"
+        class="muted"
+        style="margin-top:12px;"
+      ></div>
     </div>
 
 
@@ -239,7 +274,6 @@
     <div class="card">
       <h2>Saved Links</h2>
 
-      <!-- JavaScript fills this section automatically -->
       <div id="savedLinks">
         Loading links...
       </div>
@@ -249,6 +283,7 @@
 
 
   <script>
+
     /* =========================
        SUPABASE CONNECTION
        ========================= */
@@ -282,11 +317,22 @@
     const addLinkButton =
       document.getElementById("addLinkButton");
 
+    const cancelEditButton =
+      document.getElementById("cancelEditButton");
+
     const linkMessage =
       document.getElementById("linkMessage");
 
     const savedLinks =
       document.getElementById("savedLinks");
+
+    const formHeading =
+      document.getElementById("formHeading");
+
+
+    /* Stores the ID of the link
+       currently being edited. */
+    let editingId = null;
 
 
     /* =========================
@@ -309,8 +355,6 @@
         return;
       }
 
-      // If user is not logged in,
-      // send them back to the login page.
       if (!session) {
         window.location.href =
           "/admin/";
@@ -318,7 +362,6 @@
         return;
       }
 
-      // Show logged-in user's email.
       userEmail.textContent =
         session.user.email;
 
@@ -344,14 +387,63 @@
 
 
     /* =========================
-       ADD NEW LINK
+       FORM HELPERS
+       ========================= */
+
+    function clearLinkForm() {
+      document.getElementById(
+        "titleInput"
+      ).value = "";
+
+      document.getElementById(
+        "urlInput"
+      ).value = "";
+
+      document.getElementById(
+        "descriptionInput"
+      ).value = "";
+
+      document.getElementById(
+        "thumbnailInput"
+      ).value = "";
+
+      document.getElementById(
+        "categoryInput"
+      ).value = "";
+
+      document.getElementById(
+        "sortOrderInput"
+      ).value = "0";
+    }
+
+
+    function stopEditing() {
+      editingId = null;
+
+      clearLinkForm();
+
+      formHeading.textContent =
+        "Add Link";
+
+      addLinkButton.textContent =
+        "Add Link";
+
+      cancelEditButton.classList.add(
+        "hidden"
+      );
+
+      linkMessage.textContent = "";
+    }
+
+
+    /* =========================
+       ADD OR UPDATE LINK
        ========================= */
 
     addLinkButton.addEventListener(
       "click",
       async () => {
 
-        // Read form values.
         const title =
           document
             .getElementById("titleInput")
@@ -389,7 +481,8 @@
               .value || 0
           );
 
-        // Require at least title + URL.
+
+        /* Require title + URL */
         if (!title || !url) {
           linkMessage.textContent =
             "Title and URL are required.";
@@ -397,29 +490,68 @@
           return;
         }
 
+
+        /* Build database object */
+        const linkData = {
+          title: title,
+          url: url,
+          description:
+            description || null,
+
+          thumbnail_url:
+            thumbnailUrl || null,
+
+          category:
+            category || null,
+
+          sort_order:
+            sortOrder
+        };
+
+
+        /* =========================
+           UPDATE EXISTING LINK
+           ========================= */
+
+        if (editingId !== null) {
+          linkMessage.textContent =
+            "Saving changes...";
+
+          const { error } =
+            await supabaseClient
+              .from("links")
+              .update(linkData)
+              .eq("id", editingId);
+
+          if (error) {
+            console.error(error);
+
+            linkMessage.textContent =
+              "Error: " + error.message;
+
+            return;
+          }
+
+          stopEditing();
+
+          loadLinks();
+
+          return;
+        }
+
+
+        /* =========================
+           ADD NEW LINK
+           ========================= */
+
         linkMessage.textContent =
           "Saving...";
 
-        // Insert link into Supabase.
         const { error } =
           await supabaseClient
             .from("links")
             .insert([
-              {
-                title: title,
-                url: url,
-                description:
-                  description || null,
-
-                thumbnail_url:
-                  thumbnailUrl || null,
-
-                category:
-                  category || null,
-
-                sort_order:
-                  sortOrder
-              }
+              linkData
             ]);
 
         if (error) {
@@ -434,33 +566,21 @@
         linkMessage.textContent =
           "Link added successfully.";
 
-        // Clear form after saving.
-        document.getElementById(
-          "titleInput"
-        ).value = "";
+        clearLinkForm();
 
-        document.getElementById(
-          "urlInput"
-        ).value = "";
-
-        document.getElementById(
-          "descriptionInput"
-        ).value = "";
-
-        document.getElementById(
-          "thumbnailInput"
-        ).value = "";
-
-        document.getElementById(
-          "categoryInput"
-        ).value = "";
-
-        document.getElementById(
-          "sortOrderInput"
-        ).value = "0";
-
-        // Refresh saved links list.
         loadLinks();
+      }
+    );
+
+
+    /* =========================
+       CANCEL EDIT
+       ========================= */
+
+    cancelEditButton.addEventListener(
+      "click",
+      () => {
+        stopEditing();
       }
     );
 
@@ -496,7 +616,8 @@
         return;
       }
 
-      // No links yet.
+
+      /* No links yet */
       if (!data || data.length === 0) {
         savedLinks.textContent =
           "No links saved yet.";
@@ -504,10 +625,14 @@
         return;
       }
 
-      // Clear loading text.
+
       savedLinks.innerHTML = "";
 
-      // Create one card per link.
+
+      /* =========================
+         BUILD LINK CARDS
+         ========================= */
+
       data.forEach((link) => {
         const item =
           document.createElement("div");
@@ -542,12 +667,21 @@
           }
 
           <div class="link-actions">
+
+            <button
+              class="edit-button"
+              data-id="${link.id}"
+            >
+              Edit
+            </button>
+
             <button
               class="delete-button"
               data-id="${link.id}"
             >
               Delete
             </button>
+
           </div>
         `;
 
@@ -556,7 +690,98 @@
 
 
       /* =========================
-         DELETE LINK BUTTONS
+         EDIT BUTTONS
+         ========================= */
+
+      document
+        .querySelectorAll(".edit-button")
+        .forEach((button) => {
+
+          button.addEventListener(
+            "click",
+            () => {
+
+              const id =
+                Number(button.dataset.id);
+
+              const link =
+                data.find(
+                  (item) =>
+                    item.id === id
+                );
+
+              if (!link) {
+                return;
+              }
+
+
+              /* Remember which row
+                 is being edited */
+              editingId =
+                link.id;
+
+
+              /* Fill form with
+                 current values */
+              document.getElementById(
+                "titleInput"
+              ).value =
+                link.title || "";
+
+              document.getElementById(
+                "urlInput"
+              ).value =
+                link.url || "";
+
+              document.getElementById(
+                "descriptionInput"
+              ).value =
+                link.description || "";
+
+              document.getElementById(
+                "thumbnailInput"
+              ).value =
+                link.thumbnail_url || "";
+
+              document.getElementById(
+                "categoryInput"
+              ).value =
+                link.category || "";
+
+              document.getElementById(
+                "sortOrderInput"
+              ).value =
+                link.sort_order ?? 0;
+
+
+              /* Change form into
+                 edit mode */
+              formHeading.textContent =
+                "Edit Link";
+
+              addLinkButton.textContent =
+                "Save Changes";
+
+              cancelEditButton.classList.remove(
+                "hidden"
+              );
+
+              linkMessage.textContent =
+                "Editing " + link.title;
+
+
+              /* Scroll back to form */
+              formHeading.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+              });
+            }
+          );
+        });
+
+
+      /* =========================
+         DELETE BUTTONS
          ========================= */
 
       document
@@ -594,7 +819,16 @@
                 return;
               }
 
-              // Reload list after delete.
+
+              /* If currently editing
+                 the deleted link,
+                 reset the form */
+              if (
+                Number(id) === editingId
+              ) {
+                stopEditing();
+              }
+
               loadLinks();
             }
           );
@@ -608,6 +842,7 @@
 
     checkSession();
     loadLinks();
+
   </script>
 
 </body>
