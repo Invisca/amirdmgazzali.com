@@ -9,6 +9,9 @@
   <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+  <!-- Shared navigation -->
+  <script src="/assets/nav.js"></script>
+
   <style>
     * {
       box-sizing: border-box;
@@ -22,17 +25,57 @@
       font-family: Arial, sans-serif;
     }
 
-    header {
+    .site-header {
+      width: min(1200px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 22px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       border-bottom: 1px solid #242936;
-      padding: 24px;
     }
 
-    header h1 {
+    .brand {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 20px;
+    }
+
+    nav {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    nav a {
+      color: #9ca6b5;
+      text-decoration: none;
+      padding: 10px 12px;
+      border-radius: 8px;
+    }
+
+    nav a:hover {
+      color: white;
+      background: #151922;
+    }
+
+    nav a.active {
+      color: white;
+      background: #151922;
+    }
+
+    .page-header {
+      width: min(1200px, calc(100% - 40px));
+      margin: 36px auto 0;
+    }
+
+    .page-header h1 {
       margin: 0;
       font-size: 30px;
     }
 
-    header p {
+    .page-header p {
       margin: 8px 0 0;
       color: #9ca6b5;
     }
@@ -121,33 +164,77 @@
     .message {
       color: #9ca6b5;
     }
+
+    @media (max-width: 700px) {
+      .site-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+      }
+
+      nav {
+        flex-wrap: wrap;
+      }
+    }
   </style>
 </head>
 
 <body>
 
   <!-- =========================
+       SHARED TOP NAVIGATION
+       ========================= -->
+  <header class="site-header">
+
+    <a class="brand" href="/">
+      Tools Hub
+    </a>
+
+    <nav id="mainNav"></nav>
+
+  </header>
+
+
+  <!-- =========================
        PAGE HEADER
        ========================= -->
-  <header>
-    <h1>Links</h1>
-    <p>Useful sites, tools, and resources.</p>
-  </header>
+  <section class="page-header">
+
+    <h1>
+      Links
+    </h1>
+
+    <p>
+      Useful sites, tools, and resources.
+    </p>
+
+  </section>
 
 
   <!-- =========================
        LINK CARDS
        ========================= -->
   <main>
+
     <div id="linksGrid">
+
       <p class="message">
         Loading links...
       </p>
+
     </div>
+
   </main>
 
 
   <script>
+
+    /* =========================
+       RENDER SHARED NAVIGATION
+       ========================= */
+
+    renderNav("Links");
+
 
     /* =========================
        SUPABASE CONNECTION
